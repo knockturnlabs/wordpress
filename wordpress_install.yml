@@ -84,7 +84,7 @@
 
     - name: Configure Apache vHost
       template:
-        src: /templates/vhost-config.j2
+        src: vhost-config.j2
         dest: /etc/apache2/sites-available/{{ site_name }}.conf
         owner: www-data
         group: www-data

@@ -1,0 +1,35 @@
+<VirtualHost *:80>
+    ServerAdmin admin@site1.com
+    ServerName {{ item }}
+    ServerAlias www.{{ item }}
+    DocumentRoot /var/www/html/{{ item }}
+    <Directory /var/www/html/{{ item }}>
+        Options -Indexes +FollowSymLinks +MultiViews
+        AllowOverride All
+        Order allow,deny
+        allow from all
+    </Directory>
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerAdmin admin@site1.com
+    ServerName {{ item }}
+    ServerAlias {{ item }}
+    DocumentRoot /var/www/html/{{ item }}
+
+<Directory /var/www/html/{{ item }}>
+        Options -Indexes +FollowSymLinks +MultiViews
+        AllowOverride All
+        Order allow,deny
+        allow from all
+</Directory>
+
+#        SSLEngine on
+#        SSLCertificateFile /etc/ssl/xxx.crt
+#        SSLCertificateKeyFile /etc/ssl/xxx.key
+#        SSLCertificateChainFile /etc/ssl/xxx.ca-bundle
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>
