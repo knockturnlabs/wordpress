@@ -1,7 +1,7 @@
 ---
 - name: Add WordPress Server
   hosts: {{ host_name }}
-#  remote_user:
+#  remote_user: {{ remote_user }}
   gather_facts: no
 #  vars:
 #    database_name: testdatabase
@@ -36,11 +36,11 @@
       sudo: yes
 
     - name: Set Correct Ownership on Web Root Directory
-      command: chown -R www-data:www-data /var/www/html
+      command: chown -R www-data:www-data /var/www/html/{{ site_name }}
       sudo: yes
 
     - name: Set Correct Permissions on Web Root Directory
-      command: chmod -R 755 /var/www/html
+      command: chmod -R 755 /var/www/html/{{ site_name }}
       sudo: yes
 
     - name: Create MySQL Database
@@ -60,13 +60,13 @@
         login_password: "{{ mysql_login_pass }}
 
     - name: Copy WordPress Sample Config
-      command: mv /var/www/{{ site_name }}/wp-config-sample.php /var/www/{{ site_name }}/wp-config.php 
-      creates: /var/www/{{ site_name }}/wp-config.php
+      command: mv /var/www/html/{{ site_name }}/wp-config-sample.php /var/www/html/{{ site_name }}/wp-config.php 
+      creates: /var/www/html/{{ site_name }}/wp-config.php
       sudo: yes
 
     - name: Update WordPress Config File
       lineinfile:
-        dest: /var/www/{{ site_name }}/wp-config.php
+        dest: /var/www/html/{{ site_name }}/wp-config.php
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       with_items:
@@ -77,7 +77,7 @@
 
     - name: Enable Minor Updates
       lineinfile:
-        dest: /var/www/{{ site_name }}/wp-config.php
+        dest: /var/www/html/{{ site_name }}/wp-config.php
         line: define('WP_AUTO_UPDATE_CORE', 'minor');
         insertafter: DB_COLLATE.*
       sudo: yes
@@ -89,7 +89,7 @@
         owner: www-data
         group: www-data
         force: yes
-        mode: 0755
+        mode: 0655
       with_items:
         - "{{ site_name }}"
       sudo: yes
