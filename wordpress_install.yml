@@ -33,7 +33,7 @@
       become: true
 
     - name: Move WordPress Files To Apache Web Root Directory
-      command: cp -R /tmp/wordpress/* /var/www/html/{{ site_name }}
+      command: cp -R /tmp/wordpress/. /var/www/html/{{ site_name }}
       become: true
 
     - name: Set Correct Ownership on Web Root Directory
