@@ -31,8 +31,7 @@
       become: true
 
     - name: Move WordPress Files To Apache Web Root Directory
-      command: rsync -av wordpress/* /var/www/html/{{ site_name }}
-      chdir: /tmp/
+      command: rsync -av /tmp/wordpress/* /var/www/html/{{ site_name }}
       become: true
 
     - name: Set Correct Ownership on Web Root Directory
@@ -61,7 +60,6 @@
 
     - name: Copy WordPress Sample Config
       command: mv /var/www/html/{{ site_name }}/wp-config-sample.php /var/www/html/{{ site_name }}/wp-config.php 
-      creates: /var/www/html/{{ site_name }}/wp-config.php
       become: true
 
     - name: Update WordPress Config File
