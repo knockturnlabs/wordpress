@@ -56,8 +56,8 @@
         password: "{{ mysql_user_pass }}"
         priv: "{{ database_name }}.*:ALL"
         state: present
-        login_user: "{{ mysql_login_user }}
-        login_password: "{{ mysql_login_pass }}
+        login_user: "{{ mysql_login_user }}"
+        login_password: "{{ mysql_login_pass }}"
 
     - name: Copy WordPress Sample Config
       command: mv /var/www/html/{{ site_name }}/wp-config-sample.php /var/www/html/{{ site_name }}/wp-config.php 
