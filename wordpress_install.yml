@@ -1,6 +1,6 @@
 ---
 - name: Add WordPress Server
-  hosts: {{ host_name }}
+  hosts: "{{ host_name }}"
 #  remote_user: {{ remote_user }}
   gather_facts: no
 #  vars:
