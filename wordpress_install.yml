@@ -1,0 +1,105 @@
+---
+- name: Add WordPress Server
+  hosts: {{ host_name }}
+#  remote_user:
+  gather_facts: no
+#  vars:
+#    database_name: testdatabase
+#    mysql_login_user:
+#    mysql_login_pass: 
+#    mysql_user: testuser
+#    mysql_user_pass: testthispass
+#    site_name: www.testsite.com
+
+  tasks:
+    - name: Download Latest WordPress Package
+      get_url:
+        url=https://wordpress.org/latest.tar.gz 
+        dest=/tmp/wordpress.tar.gz
+        validate_certs=no
+      sudo: yes
+
+    - name: Extract WordPress  
+      unarchive: src=/tmp/wordpress.tar.gz dest=/tmp/ copy=no
+      sudo: yes
+
+    - name: Create WordPress Site Root Directory
+      file:
+        path: /var/www/html/{{ site_name }}
+        state: directory
+        mode: 0755
+      sudo: yes
+
+    - name: Move WordPress Files To Apache Web Root Directory
+      command: rsync -av wordpress/* /var/www/html/{{ site_name }}
+      chdir: /tmp/
+      sudo: yes
+
+    - name: Set Correct Ownership on Web Root Directory
+      command: chown -R www-data:www-data /var/www/html
+      sudo: yes
+
+    - name: Set Correct Permissions on Web Root Directory
+      command: chmod -R 755 /var/www/html
+      sudo: yes
+
+    - name: Create MySQL Database
+      mysql_db:
+        name: "{{ database_name }}"
+        state: present
+        login_user: "{{ mysql_login_user }}"
+        login_password: "{{ mysql_login_pass }}"
+  
+    - name: Create MySQL User & Give Access To Database
+      mysql_user:
+        name: "{{ mysql_user }}"
+        password: "{{ mysql_user_pass }}"
+        priv: "{{ database_name }}.*:ALL"
+        state: present
+        login_user: "{{ mysql_login_user }}
+        login_password: "{{ mysql_login_pass }}
+
+    - name: Copy WordPress Sample Config
+      command: mv /var/www/{{ site_name }}/wp-config-sample.php /var/www/{{ site_name }}/wp-config.php 
+      creates: /var/www/{{ site_name }}/wp-config.php
+      sudo: yes
+
+    - name: Update WordPress Config File
+      lineinfile:
+        dest: /var/www/{{ site_name }}/wp-config.php
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - {'regexp': "define\\('DB_NAME', '(.)+'\\);", 'line': "define('DB_NAME', '{{ database_name }}');"}        
+        - {'regexp': "define\\('DB_USER', '(.)+'\\);", 'line': "define('DB_USER', '{{ mysql_user }}');"}        
+        - {'regexp': "define\\('DB_PASSWORD', '(.)+'\\);", 'line': "define('DB_PASSWORD', '{{ mysql_user_pass }}');"}
+      sudo: yes  
+
+    - name: Enable Minor Updates
+      lineinfile:
+        dest: /var/www/{{ site_name }}/wp-config.php
+        line: define('WP_AUTO_UPDATE_CORE', 'minor');
+        insertafter: DB_COLLATE.*
+      sudo: yes
+
+    - name: Configure Apache vHost
+      template:
+        src: /templates/vhost-config.j2
+        dest: /etc/apache2/sites-available/{{ site_name }}.conf
+        owner: www-data
+        group: www-data
+        force: yes
+        mode: 0755
+      with_items:
+        - "{{ site_name }}"
+      sudo: yes
+
+    - name: Enable Apache vHost
+      command: a2ensite {{ site_name }}.conf
+      sudo: yes
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
+      sudo: yes
